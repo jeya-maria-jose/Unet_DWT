@@ -22,7 +22,7 @@ parser.add_argument('--depth', default=5, type=int)
 parser.add_argument('--width', default=32, type=int)
 parser.add_argument('--epochs', default=300, type=int)
 parser.add_argument('--batch_size', default=1, type=int)
-parser.add_argument('--save_freq', default=200, type=int)
+parser.add_argument('--save_freq', default=20, type=int)
 parser.add_argument('--save_model', default=1, type=int)
 parser.add_argument('--model_name', type=str, default='model')
 parser.add_argument('--learning_rate', type=float, default=1e-3)
@@ -40,8 +40,9 @@ train_dataset = ImageToImage2D(args.train_dataset, tf_val)
 val_dataset = ImageToImage2D(args.val_dataset, tf_val)
 predict_dataset = Image2D(args.val_dataset)
 
-# conv_depths = [int(args.width*(2**k)) for k in range(args.depth)]
-unet = UNet2D(args.in_channels, args.out_channels)
+conv_depths = [int(args.width*(2**k)) for k in range(args.depth)]
+print(conv_depths)
+unet = UNet2D(args.in_channels, args.out_channels, conv_depths)
 loss = LogNLLLoss()
 optimizer = optim.Adam(unet.parameters(), lr=args.learning_rate)
 

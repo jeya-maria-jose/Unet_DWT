@@ -30,11 +30,16 @@ class First2D(nn.Module):
             layers.append(nn.Dropout2d(p=dropout))
 
         self.first = nn.Sequential(*layers)
-        # self.DWT = DWT()
+        self.DWT = DWT()
 
     def forward(self, x):
-        out = self.first(x)
-        # print(out.shape)
+        print("First2D")
+        print(x.shape)
+        out = self.DWT(x)
+        print(out.shape)
+        out = self.first(out)
+        print(out.shape)
+        
         
         # out = self.DWT(out)
         # print(out.shape)
@@ -66,11 +71,12 @@ class Encoder2D(nn.Module):
         self.DWT = DWT()
 
     def forward(self, x):
+        print("Encoder2D")
         # print(x.shape)
         out = self.DWT(x)
-        # print(out.shape)
+        print(out.shape)
         out = self.encoder(out)
-        # print(out.shape)
+        print(out.shape)
         # out = self.DWT(out)
         # print(out.shape)
 
@@ -97,11 +103,16 @@ class Center2D(nn.Module):
             layers.append(nn.Dropout2d(p=dropout))
 
         self.center = nn.Sequential(*layers)
+        self.DWT = DWT()
+        self.IWT = IWT()
 
     def forward(self, x):
         # print("in")
+        print("center2D")
+        # out = self.DWT(x)
         out = self.center(x)
-        # print(out.shape)
+        # out = self.IWT(out)
+        print(out.shape)
         return out
 
 
@@ -126,12 +137,13 @@ class Decoder2D(nn.Module):
         self.decoder = nn.Sequential(*layers)
         self.IWT = IWT()
     def forward(self, x):
+        print("decoder2D")
+        
         # print(x.shape)
-        out = self.IWT(x)
-        # print(out.shape)
+        
         out = self.decoder(x)
-        
-        
+        print(out.shape)
+        # out = self.IWT(out)
         # print(out.shape)
         return out
 
@@ -154,7 +166,11 @@ class Last2D(nn.Module):
         self.first = nn.Sequential(*layers)
 
     def forward(self, x):
-        return self.first(x)
+        print("Last2D")
+        print(x.shape)
+        out = self.first(x)
+        print(out.shape)
+        return out
 
 
 class First3D(nn.Module):
@@ -289,7 +305,8 @@ def dwt_init(x):
     x_LH = -x1 + x2 - x3 + x4
     x_HH = x1 - x2 - x3 + x4
 
-    return torch.cat((x_LL, x_HL, x_LH, x_HH), 1)
+    # return torch.cat((x_LL, x_HL, x_LH, x_HH), 1)
+    return x_LL
 
 def iwt_init(x):
     r = 2
@@ -305,10 +322,15 @@ def iwt_init(x):
 
     h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().cuda()
 
-    h[:, :, 0::2, 0::2] = x1 - x2 - x3 + x4
-    h[:, :, 1::2, 0::2] = x1 - x2 + x3 - x4
-    h[:, :, 0::2, 1::2] = x1 + x2 - x3 - x4
-    h[:, :, 1::2, 1::2] = x1 + x2 + x3 + x4
+    # h[:, :, 0::2, 0::2] = x1 - x2 - x3 + x4
+    # h[:, :, 1::2, 0::2] = x1 - x2 + x3 - x4
+    # h[:, :, 0::2, 1::2] = x1 + x2 - x3 - x4
+    # h[:, :, 1::2, 1::2] = x1 + x2 + x3 + x4
+
+    h[:, :, 0::2, 0::2] = x1 
+    h[:, :, 1::2, 0::2] = x1 
+    h[:, :, 0::2, 1::2] = x1 
+    h[:, :, 1::2, 1::2] = x1 
 
     return h
 
