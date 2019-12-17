@@ -33,7 +33,7 @@ class UNet2D(nn.Module):
         # print(x_enc[-1].shape)
         for enc_layer in self.encoder_layers:
             x_enc.append(enc_layer(x_enc[-1]))
-        # print(x_enc[-1].shape)
+        
         
         x_dec = [self.center(x_enc[-1])]
         for dec_layer_idx, dec_layer in enumerate(self.decoder_layers):
@@ -43,7 +43,7 @@ class UNet2D(nn.Module):
                 dim=1
             )
             x_dec.append(dec_layer(x_cat))
-        exit()
+
         if not return_all:
             return x_dec[-1]
         else:

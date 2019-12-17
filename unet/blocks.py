@@ -1,7 +1,9 @@
 import torch.nn as nn
 from torch.nn.modules.loss import _Loss
 import torch
-
+import pywt
+import pywt.data
+import numpy as np
 class SoftDiceLoss(_Loss):
     def __init__(self, size_average=None, reduce=None, reduction='mean'):
         super(SoftDiceLoss, self).__init__(size_average, reduce, reduction)
@@ -33,12 +35,12 @@ class First2D(nn.Module):
         self.DWT = DWT()
 
     def forward(self, x):
-        print("First2D")
-        print(x.shape)
-        out = self.DWT(x)
-        print(out.shape)
-        out = self.first(out)
-        print(out.shape)
+        # print("First2D")
+        # print(x.shape)
+        # out = self.DWT(x)
+        # print(out.shape)
+        out = self.first(x)
+        # print(out.shape)
         
         
         # out = self.DWT(out)
@@ -71,12 +73,12 @@ class Encoder2D(nn.Module):
         self.DWT = DWT()
 
     def forward(self, x):
-        print("Encoder2D")
+        # print("Encoder2D")
         # print(x.shape)
         out = self.DWT(x)
-        print(out.shape)
+        # print(out.shape)
         out = self.encoder(out)
-        print(out.shape)
+        # print(out.shape)
         # out = self.DWT(out)
         # print(out.shape)
 
@@ -108,11 +110,13 @@ class Center2D(nn.Module):
 
     def forward(self, x):
         # print("in")
-        print("center2D")
-        # out = self.DWT(x)
-        out = self.center(x)
-        # out = self.IWT(out)
-        print(out.shape)
+        # print("center2D")
+        out = self.DWT(x)
+
+        out = self.center(out)
+        # print(out.shape)
+        out = self.IWT(out)
+        # print(out.shape)
         return out
 
 
@@ -137,13 +141,13 @@ class Decoder2D(nn.Module):
         self.decoder = nn.Sequential(*layers)
         self.IWT = IWT()
     def forward(self, x):
-        print("decoder2D")
+        # print("decoder2D")
         
         # print(x.shape)
         
         out = self.decoder(x)
-        print(out.shape)
-        # out = self.IWT(out)
+        # print(out.shape)
+        out = self.IWT(out)
         # print(out.shape)
         return out
 
@@ -166,10 +170,10 @@ class Last2D(nn.Module):
         self.first = nn.Sequential(*layers)
 
     def forward(self, x):
-        print("Last2D")
-        print(x.shape)
+        # print("Last2D")
+        # print(x.shape)
         out = self.first(x)
-        print(out.shape)
+        # print(out.shape)
         return out
 
 
@@ -294,44 +298,49 @@ class Last3D(nn.Module):
 
 def dwt_init(x):
 
-    x01 = x[:, :, 0::2, :] / 2
-    x02 = x[:, :, 1::2, :] / 2
-    x1 = x01[:, :, :, 0::2]
-    x2 = x02[:, :, :, 0::2]
-    x3 = x01[:, :, :, 1::2]
-    x4 = x02[:, :, :, 1::2]
-    x_LL = x1 + x2 + x3 + x4
-    x_HL = -x1 - x2 + x3 + x4
-    x_LH = -x1 + x2 - x3 + x4
-    x_HH = x1 - x2 - x3 + x4
-
+    # x01 = x[:, :, 0::2, :] / 2
+    # x02 = x[:, :, 1::2, :] / 2
+    # x1 = x01[:, :, :, 0::2]
+    # x2 = x02[:, :, :, 0::2]
+    # x3 = x01[:, :, :, 1::2]
+    # x4 = x02[:, :, :, 1::2]
+    # x_LL = x1 + x2 + x3 + x4
+    # x_HL = -x1 - x2 + x3 + x4
+    # x_LH = -x1 + x2 - x3 + x4
+    # x_HH = x1 - x2 - x3 + x4
+    coeffs2 = pywt.dwt2(x.detach().cpu().numpy(), 'db2')
+    LL, (LH, HL, HH) = coeffs2
+    LL=torch.tensor(LL).cuda()
     # return torch.cat((x_LL, x_HL, x_LH, x_HH), 1)
-    return x_LL
+    return LL
 
 def iwt_init(x):
-    r = 2
-    in_batch, in_channel, in_height, in_width = x.size()
-    #print([in_batch, in_channel, in_height, in_width])
-    out_batch, out_channel, out_height, out_width = in_batch, int(
-        in_channel / (r ** 2)), r * in_height, r * in_width
-    x1 = x[:, 0:out_channel, :, :] / 2
-    x2 = x[:, out_channel:out_channel * 2, :, :] / 2
-    x3 = x[:, out_channel * 2:out_channel * 3, :, :] / 2
-    x4 = x[:, out_channel * 3:out_channel * 4, :, :] / 2
+    # r = 2
+    # in_batch, in_channel, in_height, in_width = x.size()
+    # #print([in_batch, in_channel, in_height, in_width])
+    # out_batch, out_channel, out_height, out_width = in_batch, int(
+    #     in_channel / (r ** 2)), r * in_height, r * in_width
+    # x1 = x[:, 0:out_channel, :, :] / 2
+    # x2 = x[:, out_channel:out_channel * 2, :, :] / 2
+    # x3 = x[:, out_channel * 2:out_channel * 3, :, :] / 2
+    # x4 = x[:, out_channel * 3:out_channel * 4, :, :] / 2
     
 
-    h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().cuda()
+    # h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().cuda()
 
-    # h[:, :, 0::2, 0::2] = x1 - x2 - x3 + x4
-    # h[:, :, 1::2, 0::2] = x1 - x2 + x3 - x4
-    # h[:, :, 0::2, 1::2] = x1 + x2 - x3 - x4
-    # h[:, :, 1::2, 1::2] = x1 + x2 + x3 + x4
+    # # h[:, :, 0::2, 0::2] = x1 - x2 - x3 + x4
+    # # h[:, :, 1::2, 0::2] = x1 - x2 + x3 - x4
+    # # h[:, :, 0::2, 1::2] = x1 + x2 - x3 - x4
+    # # h[:, :, 1::2, 1::2] = x1 + x2 + x3 + x4
 
-    h[:, :, 0::2, 0::2] = x1 
-    h[:, :, 1::2, 0::2] = x1 
-    h[:, :, 0::2, 1::2] = x1 
-    h[:, :, 1::2, 1::2] = x1 
+    # h[:, :, 0::2, 0::2] = x1 
+    # h[:, :, 1::2, 0::2] = x1 
+    # h[:, :, 0::2, 1::2] = x1 
+    # h[:, :, 1::2, 1::2] = x1 
 
+    coef = x.detach().cpu().numpy(),(None,None,None)
+    h = pywt.idwt2(coef,'db2')
+    h=torch.tensor(h).cuda()
     return h
 
 
