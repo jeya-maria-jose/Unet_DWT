@@ -22,7 +22,7 @@ python3 train.py --train_dataset 'your directory' --val_dataset 'your directory'
 ### Architecture details
 
 <p align="center">
-  <img src="docs/img/arch2.jpg" width="300"/>
+  <img src="docs/img/arch2.jpg" width="600"/>
 </p>
 ### Done as a part of the course project for 
 Wavelets and Filter Banks, JHU Fall 2019.
