@@ -4,7 +4,7 @@ Unet based on Wavelet coefficients for segmentation
 Dataset format:
 
 ```bash
-Folder-----
+Train Folder-----
       img----
           img1.png
           img2.png
@@ -13,6 +13,16 @@ Folder-----
           label1.png
           label2.png
           .......
+Test Folder-----
+      img----
+          img1.png
+          img2.png
+          .......
+      label---
+          label1.png
+          label2.png
+          .......
+
 ```
 
 Running Command for train.py :
